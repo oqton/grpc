@@ -33,6 +33,7 @@ def pyx_library(name, deps = [], py_deps = [], srcs = [], srcs_version = "PY3", 
         deps: C/C++ dependencies of the Cython (e.g. Numpy headers).
         py_deps: Pure Python dependencies of the final library.
         srcs: .py, .pyx, or .pxd files to either compile or pass through.
+        srcs_version: Version of python source files.
         **kwargs: Extra keyword arguments passed to the py_library.
     """
 
@@ -50,8 +51,14 @@ def pyx_library(name, deps = [], py_deps = [], srcs = [], srcs_version = "PY3", 
             pxd_srcs.append(src)
         if src.endswith("__init__.py"):
             pxd_srcs.append(src)
-
+    
     # Invoke cython to produce the shared object libraries.
+    compile_version = "" # TODO: Also support PY2ANDPY3
+    if srcs_version == "PY3":
+        compile_version= "-3" 
+    if srcs_version == "PY2":
+        compile_version= "-2"
+
     for filename in pyx_srcs:
         native.genrule(
             name = filename + "_cython_translation",
@@ -60,7 +67,7 @@ def pyx_library(name, deps = [], py_deps = [], srcs = [], srcs_version = "PY3", 
             # Optionally use PYTHON_BIN_PATH on Linux platforms so that python 3
             # works. Windows has issues with cython_binary so skip PYTHON_BIN_PATH.
             cmd =
-                "PYTHONHASHSEED=0 $(location @cython//:cython_binary) --cplus $(SRCS) --output-file $(OUTS)",
+                "PYTHONHASHSEED=0 $(location @cython//:cython_binary) --cplus $(SRCS) --output-file $(OUTS) {compile_version}".format( compile_version = compile_version),
             tools = ["@cython//:cython_binary"] + pxd_srcs,
         )
 
