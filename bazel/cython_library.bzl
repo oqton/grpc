@@ -55,7 +55,7 @@ def pyx_library(name, deps = [], py_deps = [], srcs = [], srcs_version = "PY3", 
     # Invoke cython to produce the shared object libraries.
     compile_version = "" # TODO: Also support PY2ANDPY3
     if srcs_version == "PY3":
-        compile_version= "-3" 
+        compile_version= "--3str" 
     if srcs_version == "PY2":
         compile_version= "-2"
 
